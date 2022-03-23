@@ -1,0 +1,6 @@
+gview.o: gview.cpp
+human.o: human.cpp
+main.o: main.cpp view.h gview.h tview.h
+model.o: model.cpp
+tview.o: tview.cpp tview.h view.h
+view.o: view.cpp view.h
