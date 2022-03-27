@@ -1,6 +1,6 @@
-#include "view.h"
-#include "tview.h"
-#include "gview.h"
+#include "../include/view.h"
+#include "../include/tview.h"
+#include "../include/gview.h"
 
 view * view::obj;
 

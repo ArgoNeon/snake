@@ -1,13 +1,16 @@
 CXX = g++
 CXXFLAGS = -O0 -Wall
 PROG = snake
-OBJ = tview.o gview.o model.o human.o main.o view.o
+SRCOBJ = tview.o gview.o model.o human.o view.o
+OBJ = $(addprefix source/, $(SRCOBJ)) main.o
+SRCDIR = . source
+SRC = $(addsuffix /*.cpp, $(SRCDIR))
 
 all: $(PROG)
 clean:
 	$(RM) $(OBJ) $(PROG)
 depend: 
-	$(CXX) -MM $(CXXFLAGS) *.cpp > .depend
+	$(CXX) -MM $(SRC) > .depend
 $(PROG): $(OBJ)
 	$(CXX) $(CXXFLAGS) $(OBJ) -o $(PROG)
 -include .depend

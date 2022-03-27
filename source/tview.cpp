@@ -6,7 +6,7 @@
 #include <vector>
 #include <sys/ioctl.h>
 
-#include "tview.h"
+#include "../include/tview.h"
 
 //Foreground Colors
 #define FOREGROUND_COL_BLACK 30

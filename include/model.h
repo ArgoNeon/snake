@@ -6,6 +6,17 @@
 #include <list>
 
 #include "view.h"
+class Snake{
+public:
+	enum class dir{
+		UP,
+		LEFT,
+		DOWN,
+		RIGHT
+	};
+std::list<Coord> body;
+dir direction = dir::RIGHT;
+};
 
 class Game {
 std::list<Coord> rabbits;

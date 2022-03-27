@@ -1,8 +1,8 @@
 #include <iostream>
 #include <random>
 
-#include "model.h"
-#include "view.h"
+#include "../include/model.h"
+#include "../include/view.h"
 
 Coord Game::get_rand_coord(){
     Coord target = view::get("text")->get_max_coord();

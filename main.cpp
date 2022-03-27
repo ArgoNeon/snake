@@ -1,9 +1,10 @@
 #include <cstdlib>
 #include <cstdio>
-#include "view.h"
-#include "gview.h"
-#include "tview.h"
-#include "game.h"
+
+#include "include/view.h"
+#include "include/gview.h"
+#include "include/tview.h"
+#include "include/game.h"
 
 int main(int argn, char *argv[]) {
   	std::string type;

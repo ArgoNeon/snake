@@ -1,4 +1,4 @@
-#include "gview.h"
+#include "../include/gview.h"
 
 gview::gview() {
 
