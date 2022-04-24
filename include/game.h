@@ -10,7 +10,6 @@ public:
 std::list<Coord> rabbits;
 std::random_device rd;
 std::mt19937 gen(rd());
-std::uniform_int_distribution<int> uid(1, 6);
 private:
 };
 

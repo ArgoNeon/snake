@@ -6,6 +6,7 @@
 #include <list>
 
 #include "view.h"
+
 class Snake{
 public:
 	enum class dir{
@@ -21,8 +22,6 @@ dir direction = dir::RIGHT;
 class Game {
 std::list<Coord> rabbits;
 std::mt19937 gen { std::random_device()() };
-/*std::random_device rd;
-std::mt19937 gen(rd());*/
 public:
 Coord get_rand_coord();
 private:

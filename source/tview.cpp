@@ -59,23 +59,23 @@ void tview::box() {
 	max_coord.x  = w.ws_col;
 	max_coord.y  = w.ws_row;
 
-	setcolor(FOREGROUND_COL_YELLOW, BACKGROUND_COL_BLACK);
+	setcolor(FOREGROUND_COL_WHITE, BACKGROUND_COL_BLUE);
 	gotoxy(1, 1);
 
 	for (i = 1; i < max_coord.x; i++) {
-		printf("-");
+		printf(" ");
 	}
 	gotoxy(1, max_coord.y);
 
 	for (i = 1; i < max_coord.x; i++) {
-		printf("-");
+		printf(" ");
 	}
 
 	for (i = 1; i < max_coord.y; i++) {
 		gotoxy(1, i);
-		printf("|");
+		printf(" ");
 		gotoxy(max_coord.x, i);
-		printf("|");
+		printf(" ");
 	}
 }
 
