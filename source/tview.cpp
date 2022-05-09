@@ -30,14 +30,58 @@
 #define BACKGROUND_COL_WHITE 47
 
 namespace graphicInterface{
-bool final = false;
 
-void signhandler(int sign) {
-    	final = true;
+void signHandler (int sign) {
+	if (sign != SIGINT)
+            return;
+
+        TView::interruptHandler();
 }
 
-void TView::cleanscreen() {
-    	printf("\e[H\e[J");
+void signChangeWindSizeHandler (int sign) {
+        if (sign != SIGWINCH)
+            return;
+
+        TView::changeWindSizeHandler ();
+}
+
+void TView::endHandler () {
+        end = true;
+}
+
+void TView::resizer () {
+        ioctl (STDOUT_FILENO, TIOCGWINSZ, &window);
+        windSize = {window.ws_col / 2, window.ws_row};
+
+        if (!end)
+            resizeHandler();
+}
+
+void TView::addButton (const std::string &button, const std::function<void ()> &handler) {
+	 buttonList.insert ({button, handler});
+}
+
+void TView::eraseButton (const std::string &button) {
+            auto res = buttonList.find (button);
+            if (res != buttonList.end ())
+                buttonList.erase (res);
+}
+
+TView::TView() {
+        struct termios s;
+        tcgetattr(0, &old_term);
+        cfmakeraw(&s);
+        s.c_lflag |= ISIG;
+        s.c_cc[VINTR] = 3;
+        tcsetattr(0, TCSANOW, &s);
+
+        ioctl (STDOUT_FILENO, TIOCGWINSZ, &window);
+        windSize = {window.ws_col / 2, window.ws_row};
+
+        interruptHandler = std::bind (&TView::endHandler, this);
+        signal (SIGINT, &graphicInterface::signHandler);
+        changeWindSizeHandler = std::bind (&TView::resizer, this);
+        signal (SIGWINCH, &graphicInterface::signChangeWindSizeHandler);
 }
 
 void TView::gotoxy(int x, int y) {
@@ -50,6 +94,10 @@ void TView::setcolor(int color) {
 
 void TView::setcolor(int f_color, int b_color) {
     	printf("\e[%d;%dm", f_color, b_color);
+}
+
+void TView::resetcolor(){ 
+	printf ("\e[m\e[1;1H"); 
 }
 
 std::pair<int, int> TView::getWindowSize () {
@@ -78,20 +126,19 @@ void TView::hline(int x, int y, int size) {
 }
 
 void TView::drawBox() {
-	ioctl(1, TIOCSWINSZ, &window);
-	
+	printf ("\e[1;1H\e[J");	
 	setcolor(FOREGROUND_COL_WHITE, BACKGROUND_COL_BLUE);
 	tile = {' ', ' '};
-	wline(0, 0, windSize.second/2);
-	hline(0, 0, windSize.first);
-	hline(windSize.second/2, 0, windSize.first);
-	wline(0, windSize.first, windSize.second/2);
-	setcolor(FOREGROUND_COL_WHITE, BACKGROUND_COL_BLACK);
+	wline(0, 0, windSize.first - 1);
+	hline(0, 0, windSize.second - 1);
+	hline(windSize.first - 1, 0, windSize.second - 1);
+	wline(0, windSize.second - 1, windSize.first - 1);
+	resetcolor();
 	fflush(stdout);
 }
 
 void TView::drawSnake(const Control::Snake &snake) {
-	setcolor(FOREGROUND_COL_MAGENTA, BACKGROUND_COL_BLACK);
+	setcolor(FOREGROUND_COL_BLACK, BACKGROUND_COL_MAGENTA);
 	
 	switch(snake.direction) {
 		case Control::Snake::dir::RIGHT:
@@ -110,7 +157,7 @@ void TView::drawSnake(const Control::Snake &snake) {
 
 	hline(snake.body.front().first, snake.body.front().second, 1);
 
-	setcolor(FOREGROUND_COL_CYAN, BACKGROUND_COL_BLACK);
+	setcolor(FOREGROUND_COL_BLACK, BACKGROUND_COL_CYAN);
 
 	for (auto iter = ++snake.body.begin(); iter != snake.body.end(); ++iter) {
 		auto next = iter;
@@ -128,74 +175,69 @@ void TView::drawSnake(const Control::Snake &snake) {
 					tile = {'v', 'v'};
 			}
 		hline(next->first, next->second, 1);
-		fflush(stdout);
 	}
 	
+	resetcolor();
+        fflush(stdout);
 
-}
-
-void TView::draw() {
-	cleanscreen();
-	drawBox();
-	//drawSnake();
-	fflush(stdout);
-	usleep(500);	
-}
-
-void TView::MainLoop() {
-	const int tmslp = 500;
-	int p;
-	char c;
-	
-	while (!final) {
-		struct pollfd arr = {0, POLLIN};
-    		p = poll(&arr, 1, tmslp);
-		draw();
-		
-    		if (p == 1) {
-        		scanf("%c", &c);
-
-        		if (c == 'q') {
-            			break;
-        		}
-			
-			if (c == 033) {
-				break;
-			}
-		}
-    	}
-	cleanscreen();
-	gotoxy(1, 1);
-	setcolor(FOREGROUND_COL_RED, BACKGROUND_COL_BLACK);
-	printf("YOU DIED...\n");
-	fflush(stdout);
 }
 
 void TView::drawRabbit(const coord_t &rabbit) {
-	setcolor(FOREGROUND_COL_WHITE, BACKGROUND_COL_BLACK);
-
-  	gotoxy(rabbit.first, rabbit.second);
-  	printf("R");
+	setcolor(FOREGROUND_COL_BLACK, BACKGROUND_COL_WHITE);
+	tile = {' ', ' '};
+	hline (rabbit.first, rabbit.second, 1);
+  	resetcolor();
 	fflush(stdout);
 }
 
-TView::TView() {
-	struct termios s;
-	tcgetattr(0,&s);
-	old_term = s;
-	cfmakeraw(&s);
-	s.c_lflag |= ISIG;
-	tcsetattr(0,TCSANOW,&s);
-	signal(SIGINT, signhandler);
+void TView::buttonHandler() {
+        using namespace std::chrono_literals;
+	unsigned char c;
+	const int tmslp = 100;
+        struct pollfd pollin = {0, POLL_IN, 0};
+        std::string request = "";
+        auto start = std::chrono::steady_clock::now ();
+
+        while (std::chrono::steady_clock::now () < start + handTime) {
+            if (poll (&pollin, 1, tmslp) == 1) { 
+                read (0, &c, 1);
+
+                request += c;
+
+                if (auto res = buttonList.find (request); res != buttonList.end ()) {
+                    	res->second ();
+                    	request = "";
+                }
+
+                if (c == 'q') {
+			endHandler();
+                    	break;
+                }
+            }
+        }
 }
 
-/*TView::~TView() {
-	tcsetattr(0,TCSANOW,&old_term);
-}
-*/
+    void TView::run () {
+        resizeHandler ();
+        //int result;
+        while (!end) {
+            	buttonHandler();
+        	/*result = setCoordObjs ();
+            	if (result) {
+			endHandler ();
+               		break;
+		 }*/
 
-void TView::run() {
-	printf("Nice\n");
-}
+        	draw();
+        }
+
+        /*if (result == 1) {
+            	end = false;
+        }*/
+
+        //cleanscreen();
+	printf ("\e[1;1H\e[J");
+        tcsetattr (0, TCSANOW, &old_term);
+    }
 
 } //graphicInterface

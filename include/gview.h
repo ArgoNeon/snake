@@ -9,12 +9,14 @@ class GView: public View{
 public:
 	GView();
 	~GView() override = default;
-	void draw() override;
+	void drawBox() override;
+	void endHandler() override;
         void run() override;
-        void MainLoop() override;
         void drawRabbit (const coord_t &rabbit) override;
         void drawSnake (const Control::Snake &snake) override;
 	coord_t getWindowSize() override;
+	void eraseButton (const std::string &button) override;
+	void addButton (const std::string &button, const std::function<void ()> &handler) override;
 private:
 
 };

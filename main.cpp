@@ -14,7 +14,7 @@ int main(int argn, char *argv[]) {
 
 	game.addPlayer(p1);
 	
-  	//screen -> MainLoop(); 
-	screen->drawSnake(p1);
+
+	screen -> run();
 	return 0;
 }
