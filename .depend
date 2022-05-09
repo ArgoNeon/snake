@@ -1,12 +1,19 @@
-main.o: main.cpp include/view.h include/gview.h include/view.h \
- include/tview.h include/game.h
+main.o: main.cpp include/view.h include/model.h include/human.h \
+ include/gview.h include/view.h include/tview.h include/model.h \
+ include/human.h
 gview.o: source/gview.cpp source/../include/gview.h \
- source/../include/view.h
-human.o: source/human.cpp
+ source/../include/view.h source/../include/model.h \
+ source/../include/human.h
+human.o: source/human.cpp source/../include/human.h \
+ source/../include/model.h source/../include/human.h \
+ source/../include/view.h source/../include/model.h
 model.o: source/model.cpp source/../include/model.h \
- source/../include/view.h source/../include/view.h
+ source/../include/human.h source/../include/view.h \
+ source/../include/model.h
 tview.o: source/tview.cpp source/../include/tview.h \
- source/../include/view.h
+ source/../include/view.h source/../include/model.h \
+ source/../include/human.h
 view.o: source/view.cpp source/../include/view.h \
+ source/../include/model.h source/../include/human.h \
  source/../include/tview.h source/../include/view.h \
  source/../include/gview.h

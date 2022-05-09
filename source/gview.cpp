@@ -1,18 +1,31 @@
 #include "../include/gview.h"
 
-gview::gview() {
+namespace graphicInterface {
+
+GView::GView() {
 
 }
 
-gview::~gview() {
-
+void GView::draw() {
 }
 
-void gview::draw() {
+void GView::run() {
 }
 
-void gview::run() {
+void GView::MainLoop() {
 }
 
-void gview::MainLoop() {
+coord_t GView::getWindowSize() {
+	coord_t nil = {0, 0};
+	return nil;	
 }
+
+void GView::drawRabbit (const coord_t &rabbit) {
+	
+}
+
+void GView::drawSnake (const Control::Snake &snake) {
+
+}
+}  // namespace graphicInterface
+

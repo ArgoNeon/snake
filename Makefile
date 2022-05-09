@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -O0 -Wall
+CXXFLAGS = -O0 -Wall -std=c++17
 PROG = snake
 SRCOBJ = tview.o gview.o model.o human.o view.o
 OBJ = $(addprefix source/, $(SRCOBJ)) main.o

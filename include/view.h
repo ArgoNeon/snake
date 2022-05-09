@@ -1,31 +1,33 @@
 #ifndef GAME_VIEW_H
 #define GAME_VIEW_H
 
-#include<string>
+#include <iostream>
+#include <string>
+#include <memory>
+#include <string_view>
 
-class Coord{
-public:
-	int x;
-	int y;
-};
+#include "model.h"
 
-class view{
-protected:
-	Coord max_coord;
+namespace graphicInterface{
+using coord_t = std::pair<int, int>;
+
+class View{
 public:
-	static view * get(const std::string& arg);
-	static view * obj;
-	Coord get_max_coord();
-        void set_max_coord(int x, int y);
-	//void paint(Coord);
-	//void paint(string, int);
-	//void paint(snake);
+	static inline const std::string_view textView = "text";
+        static inline const std::string_view graphView = "graph";
+	static inline std::shared_ptr<View> obj = nullptr;
+        static std::shared_ptr<View> get (const std::string &type = "");
+
+	virtual coord_t getWindowSize() = 0;
 	virtual void MainLoop() = 0;
 	virtual void draw() = 0;
 	virtual void run() = 0;
-	virtual ~view() {};
+	virtual void drawRabbit (const coord_t &rabbit) = 0; 
+	virtual void drawSnake (const Control::Snake &snake) = 0; 
+	virtual ~View() = 0;
 private:
 
 };
+}  // namespace graphicInterface
 
 #endif // GAME_VIEW_H

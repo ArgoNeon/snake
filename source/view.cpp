@@ -2,27 +2,20 @@
 #include "../include/tview.h"
 #include "../include/gview.h"
 
-view * view::obj;
+namespace graphicInterface {
 
-view * view::get(const std::string& arg) {
+std::shared_ptr<View> View::get (const std::string &type) {
 	if (!obj) {
-	if (arg == "text") {
-		tview * tv = new tview();
-		obj = tv;
-	}
-	if (arg == "graph") {
-		gview * gv = new gview();
-		obj = gv; 
-	}
-	}
-	return obj;
-}
+		if (type == textView)
+			obj = std::make_shared<TView> ();
+		else if (type == graphView)
+			obj = std::make_shared<GView> ();
+		else
+			throw std::logic_error ("Try \"text\" or \"graph\"");
+		}
 
-Coord view::get_max_coord(){
-    return view::max_coord;
-}
+        return obj;
+    }
 
-void view::set_max_coord(int x, int y){
-    view::max_coord.x = x;
-    view::max_coord.y = y;
-}
+View::~View() {};
+}  // namespace graphicInterface

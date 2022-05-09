@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <sys/poll.h>
 #include <vector>
+#include <list>
 #include <sys/ioctl.h>
 
 #include "../include/tview.h"
@@ -28,67 +29,120 @@
 #define BACKGROUND_COL_CYAN 46
 #define BACKGROUND_COL_WHITE 47
 
-struct termios old_term;
+namespace graphicInterface{
 bool final = false;
 
 void signhandler(int sign) {
     	final = true;
 }
 
-void tview::cleanscreen() {
+void TView::cleanscreen() {
     	printf("\e[H\e[J");
 }
 
-void tview::gotoxy(int x, int y) {
+void TView::gotoxy(int x, int y) {
     	printf("\e[%d;%dH", y, x);
 }
 
-void tview::setcolor(int color) {
+void TView::setcolor(int color) {
     	printf("\e[%dm", color);
 }
 
-void tview::setcolor(int f_color, int b_color) {
+void TView::setcolor(int f_color, int b_color) {
     	printf("\e[%d;%dm", f_color, b_color);
 }
 
-void tview::box() {
-	int i;
-	struct winsize w;
+std::pair<int, int> TView::getWindowSize () {
+       return windSize;
+}
 
-	ioctl(1, TIOCGWINSZ, &w);
-	max_coord.x  = w.ws_col;
-	max_coord.y  = w.ws_row;
+void TView::wline(int x, int y, int size) {
+	x = x * 2 + 1;
+	y++;
+	
+	gotoxy(x, y);
+	for (int i = 0; i < size; i++) {
+		printf ("%c%c", tile.first, tile.second);
+	}
+}
 
+void TView::hline(int x, int y, int size) {
+	x = x * 2 + 1;
+	y++;
+
+	for (int i = 0; i < size; i++) {
+                gotoxy(x, y);
+                printf ("%c%c", tile.first, tile.second);
+                y++;
+        }
+}
+
+void TView::drawBox() {
+	ioctl(1, TIOCSWINSZ, &window);
+	
 	setcolor(FOREGROUND_COL_WHITE, BACKGROUND_COL_BLUE);
-	gotoxy(1, 1);
-
-	for (i = 1; i < max_coord.x; i++) {
-		printf(" ");
-	}
-	gotoxy(1, max_coord.y);
-
-	for (i = 1; i < max_coord.x; i++) {
-		printf(" ");
-	}
-
-	for (i = 1; i < max_coord.y; i++) {
-		gotoxy(1, i);
-		printf(" ");
-		gotoxy(max_coord.x, i);
-		printf(" ");
-	}
-}
-
-
-void tview::draw() {
-	cleanscreen();
-	box();
-	DrawRabbits();
+	tile = {' ', ' '};
+	wline(0, 0, windSize.second/2);
+	hline(0, 0, windSize.first);
+	hline(windSize.second/2, 0, windSize.first);
+	wline(0, windSize.first, windSize.second/2);
+	setcolor(FOREGROUND_COL_WHITE, BACKGROUND_COL_BLACK);
 	fflush(stdout);
-	usleep(1000);	
 }
 
-void tview::MainLoop(){
+void TView::drawSnake(const Control::Snake &snake) {
+	setcolor(FOREGROUND_COL_MAGENTA, BACKGROUND_COL_BLACK);
+	
+	switch(snake.direction) {
+		case Control::Snake::dir::RIGHT:
+			tile = {' ', '>'};
+			break;	
+		case Control::Snake::dir::LEFT:
+			tile = {'<', ' '};	
+			break;
+		case Control::Snake::dir::UP:
+			tile = {'/', '\\'};	
+			break;
+		case Control::Snake::dir::DOWN:
+			tile = {'\\', '/'};
+			break;	
+	}
+
+	hline(snake.body.front().first, snake.body.front().second, 1);
+
+	setcolor(FOREGROUND_COL_CYAN, BACKGROUND_COL_BLACK);
+
+	for (auto iter = ++snake.body.begin(); iter != snake.body.end(); ++iter) {
+		auto next = iter;
+
+		if (next->first != iter->first) {
+			if (next->first < iter->first) 
+				tile = {'<', '<'};
+			else
+				tile = {'>', '>'};
+		} else 
+			if (next->second != iter->second) {
+				if (next->second < iter->second)
+					tile = {'^', '^'};
+				else 
+					tile = {'v', 'v'};
+			}
+		hline(next->first, next->second, 1);
+		fflush(stdout);
+	}
+	
+
+}
+
+void TView::draw() {
+	cleanscreen();
+	drawBox();
+	//drawSnake();
+	fflush(stdout);
+	usleep(500);	
+}
+
+void TView::MainLoop() {
 	const int tmslp = 500;
 	int p;
 	char c;
@@ -117,23 +171,15 @@ void tview::MainLoop(){
 	fflush(stdout);
 }
 
-void tview::DrawRabbits() {
-  	struct winsize w;
-  	ioctl(1, TIOCGWINSZ, &w);
-	int i, x, y;
-	int n = rand() % 20 + 5;
-
+void TView::drawRabbit(const coord_t &rabbit) {
 	setcolor(FOREGROUND_COL_WHITE, BACKGROUND_COL_BLACK);
 
-	for (i = 0; i < n; i++) {
-  		x = rand() % (w.ws_col - 2) + 2;
-  		y = rand() % (w.ws_row - 2) + 2;
-  		gotoxy(x, y);
-  		printf("R");
-	}
+  	gotoxy(rabbit.first, rabbit.second);
+  	printf("R");
+	fflush(stdout);
 }
 
-tview::tview() {
+TView::TView() {
 	struct termios s;
 	tcgetattr(0,&s);
 	old_term = s;
@@ -143,11 +189,13 @@ tview::tview() {
 	signal(SIGINT, signhandler);
 }
 
-tview::~tview() {
+/*TView::~TView() {
 	tcsetattr(0,TCSANOW,&old_term);
 }
+*/
 
-void tview::run() {
+void TView::run() {
 	printf("Nice\n");
 }
 
+} //graphicInterface
