@@ -31,11 +31,11 @@ public:
         virtual void eraseButton (const std::string &button) = 0;
 
 	std::function<void ()> draw;
-        std::function<int ()> setCoordObjs;
+        std::function<int ()> move;
         //std::function<void ()> botsHandler;
         std::function<void ()> resizeHandler;
 protected:
-	std::chrono::milliseconds handTime = 100ms;
+	std::chrono::milliseconds handTime = 200ms;
 private:
 	static inline const std::string_view textView = "text";
         static inline const std::string_view graphView = "graph";

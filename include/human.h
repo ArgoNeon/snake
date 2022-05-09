@@ -16,10 +16,10 @@ struct Snake {
         };
 
 	enum class dir{
-		RIGHT,
-		LEFT,
 		UP,
-		DOWN
+		LEFT,
+		DOWN,
+		RIGHT
 	};
 	
 	std::string name;
@@ -29,6 +29,9 @@ struct Snake {
 	man manager;
 
 	void setSnake(const coord_t  &start);
+	size_t getLength();
+	virtual void snakeDeath() {}
+
 	Snake(const man &who) : manager(who) {}
 	virtual ~Snake() = 0;
 };
@@ -38,12 +41,14 @@ private:
 	static inline int numPlayer = 0;
 	std::vector<std::string> buttons;
 
-	void buttonHandler (dir direction);
+	void buttonHandler (dir direct);
 	void initPlayer (const std::initializer_list<std::string> &buttonSet);
 public:
 	Player (const std::string &standart);
 	Player (const std::initializer_list<std::string> &buttonSet);
 	void setName (const std::string &Name);
+	void setButtons();
+	void snakeDeath() override;
         ~Player() override = default;
 };
 
@@ -62,4 +67,5 @@ class CleverBot: public Bot{
 	~CleverBot() override = default;
 };
 } //namespace Control
+
 #endif// GAME_HUMAN_H

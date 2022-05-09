@@ -6,6 +6,7 @@
 #include <vector>
 #include <list>
 #include <sys/ioctl.h>
+#include <string>
 
 #include "../include/tview.h"
 
@@ -82,6 +83,10 @@ TView::TView() {
         signal (SIGINT, &graphicInterface::signHandler);
         changeWindSizeHandler = std::bind (&TView::resizer, this);
         signal (SIGWINCH, &graphicInterface::signChangeWindSizeHandler);
+}
+
+void TView::cleanscreen() {
+	printf ("\e[1;1H\e[J");
 }
 
 void TView::gotoxy(int x, int y) {
@@ -193,7 +198,7 @@ void TView::drawRabbit(const coord_t &rabbit) {
 void TView::buttonHandler() {
         using namespace std::chrono_literals;
 	unsigned char c;
-	const int tmslp = 100;
+	const int tmslp = 200;
         struct pollfd pollin = {0, POLL_IN, 0};
         std::string request = "";
         auto start = std::chrono::steady_clock::now ();
@@ -219,24 +224,24 @@ void TView::buttonHandler() {
 
     void TView::run () {
         resizeHandler ();
-        //int result;
+        int playing;
         while (!end) {
             	buttonHandler();
-        	/*result = setCoordObjs ();
-            	if (result) {
+        	playing = move();
+
+            	if (playing) {
 			endHandler ();
                		break;
-		 }*/
+		}
 
         	draw();
         }
 
-        /*if (result == 1) {
-            	end = false;
-        }*/
+        if (playing == 1) {
+            	end = true;
+        }
 
-        //cleanscreen();
-	printf ("\e[1;1H\e[J");
+	cleanscreen();
         tcsetattr (0, TCSANOW, &old_term);
     }
 

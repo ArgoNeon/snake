@@ -7,8 +7,8 @@
 
 namespace Control {
 
-	void Player::buttonHandler(dir direction) {
-		switch (direction) {
+	void Player::buttonHandler(dir direct) {
+		switch (direct) {
                 case Snake::dir::UP:
 			if (prevDirection != dir::DOWN)
 				direction = dir::UP;
@@ -33,6 +33,17 @@ namespace Control {
                         body.push_back({start.first - i, start.second});
                 }
         }
+
+	size_t Snake::getLength() { 
+		return body.size ();
+	}
+	
+	void Player::snakeDeath() {
+        	auto v = graphicInterface::View::get();
+
+        	for (auto but: buttons)
+            		v->eraseButton (but);
+   	}
 	
 	void Player::initPlayer (const std::initializer_list<std::string> &buttonSet) {
 		name = "Player_" + std::to_string(++numPlayer);
@@ -45,7 +56,7 @@ namespace Control {
 
 	Player::Player (const std::initializer_list<std::string> &buttonSet) : Snake(man::PLAYER) {
 	       	initPlayer (buttonSet);
-    }
+	}
 
 
 	Player::Player (const std::string &standart) : Snake(man::PLAYER) {
@@ -60,6 +71,13 @@ namespace Control {
 				return;
 			}
 
+			throw std::invalid_argument ("Strange combination");
+	}
+
+	void Player::setButtons() {
+		auto v = graphicInterface::View::get ();
+
+        	std::for_each (buttons.begin(), buttons.end (), [this, v, direct = 0] (auto but) mutable { v->addButton (but, std::bind (&Player::buttonHandler, this, static_cast<dir> (direct++))); });
 	}
 
 	Snake::~Snake() {}

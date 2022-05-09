@@ -13,6 +13,7 @@ int main(int argn, char *argv[]) {
 	Control::Player p2 ("arrows");
 
 	game.addPlayer(p1);
+	game.addPlayer(p2);
 	
 
 	screen -> run();

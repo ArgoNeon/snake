@@ -29,7 +29,7 @@ private:
         coord_t coordinateFromNum (int num);
 	bool checkSnakeCrash();
         void botsHandler ();
-        void setAvailablefields ();
+        void setAvailableTiles ();
 public:
 	Game();
 	void addPlayer(Control::Player &p);
