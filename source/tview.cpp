@@ -164,17 +164,17 @@ void TView::drawSnake(const Control::Snake &snake) {
 
 	setcolor(FOREGROUND_COL_BLACK, BACKGROUND_COL_CYAN);
 
-	for (auto iter = ++snake.body.begin(); iter != snake.body.end(); ++iter) {
-		auto next = iter;
+	for (auto iter = snake.body.begin(); iter != --snake.body.end(); ++iter) {
+		auto next = std::next(iter);
 
 		if (next->first != iter->first) {
-			if (next->first < iter->first) 
+			if (next->first > iter->first) 
 				tile = {'<', '<'};
 			else
 				tile = {'>', '>'};
 		} else 
 			if (next->second != iter->second) {
-				if (next->second < iter->second)
+				if (next->second > iter->second)
 					tile = {'^', '^'};
 				else 
 					tile = {'v', 'v'};
